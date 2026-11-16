@@ -17,9 +17,9 @@ export async function obtenerSesion(): Promise<UsuarioSesion | null> {
     const denied = import.meta.env.VITE_MOCK_DENY === 'true';
     const permisos: PermisosUsuario = denied ? { read: false, write: false } : { read: true, write: true };
     return {
-      user_id: 'mock-admin-001',
-      nombre_completo: 'Administrador de Prueba',
-      dependencia_id: 'ARCHIVO GENERAL',
+      user_id: 'mock-mesa-001',
+      nombre_completo: 'Agente de Mesa de Entradas',
+      dependencia_id: 'MESA DE ENTRADAS',
       permisos,
       token: 'mock-token',
     };
