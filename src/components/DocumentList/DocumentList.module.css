@@ -1,10 +1,21 @@
 .wrap {}
-.table { width: 100%; border-collapse: collapse; background: var(--color-surface); }
-.table th, .table td { padding: 8px; border-bottom: 1px solid var(--color-border); text-align: left; }
+.table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; }
+.table th, .table td { padding: 16px; border-bottom: 1px solid #DCE1E7; text-align: left; }
+.badgeBlue { background: #E3F2FD; color: #1D5D9B; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+.badgeGray { background: #EEE; color: #555; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+.consultBtn { border: 1px solid #1D5D9B; color: #1D5D9B; background: #fff; }
+.consultBtn:hover { background: #1D5D9B; color: #fff; }
 .cards { display: none; }
 .empty { padding: 16px; text-align: center; }
-@media (max-width: 640px) {
+.mobileScan { display: none; }
+.mobileSearch { display: none; }
+@media (max-width: 768px) {
   .table { display: none; }
+  .mobileScan { display: block; width: 100%; min-height: 80px; background: #1D5D9B; color: #fff; font-size: 1.1rem; margin-bottom: 12px; }
+  .mobileSearch { display: block; margin-bottom: 12px; }
+  .mobileSearch input { width: 100%; }
   .cards { display: flex; flex-direction: column; gap: 8px; }
-  .card { background: var(--color-surface); padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; }
+  .card { background: #fff; padding: 12px; border: 1px solid #DCE1E7; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .cardMeta { font-size: 0.85rem; color: #555; }
+  .viewBtn { border: 1px solid #1D5D9B; color: #1D5D9B; background: #fff; }
 }
