@@ -1,0 +1,6 @@
+.header { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: var(--color-primary); color: #fff; flex-wrap: wrap; }
+.logo { font-weight: 700; font-size: 1.25rem; }
+.info { display: flex; flex-direction: column; flex: 1; }
+.name { font-weight: 600; }
+.dep { font-size: 0.85rem; opacity: 0.85; }
+.uploadBtn { background: var(--color-accent); }

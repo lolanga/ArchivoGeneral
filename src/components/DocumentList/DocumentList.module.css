@@ -1,0 +1,10 @@
+.wrap {}
+.table { width: 100%; border-collapse: collapse; background: var(--color-surface); }
+.table th, .table td { padding: 8px; border-bottom: 1px solid var(--color-border); text-align: left; }
+.cards { display: none; }
+.empty { padding: 16px; text-align: center; }
+@media (max-width: 640px) {
+  .table { display: none; }
+  .cards { display: flex; flex-direction: column; gap: 8px; }
+  .card { background: var(--color-surface); padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; }
+}

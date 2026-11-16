@@ -1,0 +1,4 @@
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; }
+.modal { background: var(--color-surface); padding: 24px; border-radius: var(--radius); max-width: 480px; width: 90%; }
+.banner { background: var(--color-warning); color: #000; padding: 8px; border-radius: var(--radius); margin: 8px 0; font-size: 0.9rem; }
+.legal { font-size: 0.8rem; color: #555; }
