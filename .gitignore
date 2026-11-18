@@ -1,3 +1,6 @@
+# Almacenamiento local de desarrollo (documentos reales, metadatos y auditoría)
+server/storage/
+
 # Logs
 logs
 *.log

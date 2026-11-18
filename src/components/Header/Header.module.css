@@ -7,3 +7,4 @@
 .agent { font-weight: 600; font-size: 0.9rem; }
 .dep { font-size: 0.75rem; opacity: 0.85; }
 .uploadBtn { background: #fff; color: #0F2C59; font-weight: 600; }
+.auditBtn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.6); color: #fff; }

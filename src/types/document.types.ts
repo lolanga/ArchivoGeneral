@@ -17,6 +17,8 @@ export interface Documento {
 export interface PermisosUsuario {
   read: boolean;
   write: boolean;
+  /** Habilita la consulta de auditoría. Se obtiene del token institucional. */
+  admin?: boolean;
 }
 
 export interface UsuarioSesion {

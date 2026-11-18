@@ -15,7 +15,10 @@ export async function obtenerSesion(): Promise<UsuarioSesion | null> {
   if (USE_MOCK) {
     // mock administrativo
     const denied = import.meta.env.VITE_MOCK_DENY === 'true';
-    const permisos: PermisosUsuario = denied ? { read: false, write: false } : { read: true, write: true };
+    const admin = import.meta.env.VITE_MOCK_ADMIN === 'true';
+    const permisos: PermisosUsuario = denied
+      ? { read: false, write: false, admin }
+      : { read: true, write: true, admin };
     return {
       user_id: 'mock-mesa-001',
       nombre_completo: 'Agente de Mesa de Entradas',
@@ -32,7 +35,11 @@ export async function obtenerSesion(): Promise<UsuarioSesion | null> {
     user_id: payload.user_id,
     nombre_completo: payload.nombre_completo,
     dependencia_id: payload.dependencia_id,
-    permisos: payload.permisos ?? { read: false, write: false },
+    permisos: {
+      read: Boolean(payload.permisos?.read),
+      write: Boolean(payload.permisos?.write),
+      admin: Boolean(payload.permisos?.admin ?? payload.admin),
+    },
     token,
   };
 }

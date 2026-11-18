@@ -1,8 +1,8 @@
 import styles from './Header.module.css';
 import type { UsuarioSesion } from '../../types/document.types';
 
-interface Props { usuario: UsuarioSesion; onUpload: () => void; }
-export function Header({ usuario, onUpload }: Props) {
+interface Props { usuario: UsuarioSesion; onUpload: () => void; onAudit: () => void; }
+export function Header({ usuario, onUpload, onAudit }: Props) {
   return (
     <header className={styles.header}>
       <div className={styles.logo}>
@@ -14,7 +14,10 @@ export function Header({ usuario, onUpload }: Props) {
           <span className={styles.agent}>{usuario.nombre_completo}</span>
           <span className={styles.dep}>{usuario.dependencia_id}</span>
         </div>
-        <button className={styles.uploadBtn} onClick={onUpload}>+ Digitalizar / Subir Documento</button>
+        {usuario.permisos.admin && (
+          <button type="button" className={styles.auditBtn} onClick={onAudit}>Auditoría</button>
+        )}
+        <button type="button" className={styles.uploadBtn} onClick={onUpload}>+ Digitalizar / Subir Documento</button>
       </div>
     </header>
   );
