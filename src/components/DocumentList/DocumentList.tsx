@@ -1,66 +1,103 @@
 import styles from './DocumentList.module.css';
+import { Icon } from '../Icon/Icon';
+import { formatearFecha, formatoArchivo } from '../../utils/format';
 import type { Documento } from '../../types/document.types';
 
 interface Props {
   docs: Documento[];
-  onConsult: (d: Documento) => void;
-  onDownload: (d: Documento) => void;
-  onUpload: () => void;
-  onEdit: (d: Documento) => void;
-  onDelete: (d: Documento) => void;
-  puedeEditar: boolean;
+  puedeRevisar: boolean;
+  puedeSubir: boolean;
+  onRevisar: (doc: Documento) => void;
+  onSubir: () => void;
+  onDenegado: (mensaje: string) => void;
 }
 
-export function DocumentList({ docs, onConsult, onDownload, onUpload, onEdit, onDelete, puedeEditar }: Props) {
-  if (docs.length === 0) return <p className={styles.empty}>Sin documentos.</p>;
+export function DocumentList({ docs, puedeRevisar, puedeSubir, onRevisar, onSubir, onDenegado }: Props) {
+  if (docs.length === 0) {
+    return (
+      <section className={styles.empty}>
+        <Icon nombre="description" size={36} />
+        <p>No se encontraron documentos con los filtros seleccionados.</p>
+      </section>
+    );
+  }
+
+  const revisar = (doc: Documento) => {
+    if (puedeRevisar) {
+      onRevisar(doc);
+    } else {
+      onDenegado('Su perfil no tiene permiso para revisar documentos (línea 2).');
+    }
+  };
+
   return (
-    <div className={styles.wrap}>
-      <button type="button" className={styles.mobileScan} onClick={onUpload}>
-        📷 Escanear con Cámara / Subir Archivo
-      </button>
-      <div className={styles.mobileSearch}><input placeholder="Búsqueda rápida" /></div>
-      <table className={styles.table}>
-        <thead><tr><th>N°</th><th>Tipo</th><th>Fecha</th><th>Acciones</th></tr></thead>
-        <tbody>
-          {docs.map(d => (
-            <tr key={d.id}>
-              <td>{d.numero_documento}</td>
-              <td><span className={d.tipo_documento === 'EXPEDIENTE' ? styles.badgeBlue : styles.badgeGray}>{d.tipo_documento}</span></td>
-              <td>{d.fecha_documento}</td>
-              <td className={styles.actions}>
-                <button type="button" className={styles.consultBtn} onClick={() => onConsult(d)}>Consultar Archivo</button>
-                <button type="button" className={styles.downloadBtn} onClick={() => onDownload(d)}>Descargar</button>
-                {puedeEditar && (
-                  <>
-                    <button type="button" className={styles.editBtn} onClick={() => onEdit(d)}>Editar</button>
-                    <button type="button" className={styles.deleteBtn} onClick={() => onDelete(d)}>Eliminar</button>
-                  </>
-                )}
-              </td>
+    <section className={styles.wrap} aria-label="Listado de documentos digitalizados">
+      {puedeSubir && (
+        <button type="button" className={styles.mobileScan} onClick={onSubir}>
+          <Icon nombre="camera" size={28} />
+          <span>Escanear con Cámara / Subir Archivo</span>
+        </button>
+      )}
+
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>N° Identificación</th>
+              <th>Dependencia</th>
+              <th>Fecha del Documento</th>
+              <th>Formato</th>
+              <th className={styles.accion}>Acción</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {docs.map((doc) => (
+              <tr key={doc.id}>
+                <td>
+                  <span className={doc.tipo_documento === 'EXPEDIENTE' ? styles.badgeBlue : styles.badgeGray}>
+                    {doc.tipo_documento === 'EXPEDIENTE' ? 'Expediente' : 'Nota'}
+                  </span>
+                </td>
+                <td className={styles.numero}>{doc.numero_documento}</td>
+                <td>{doc.dependencia}</td>
+                <td className={styles.fecha}>{formatearFecha(doc.fecha_documento)}</td>
+                <td className={styles.fecha}>{formatoArchivo(doc.mime_type, doc.nombre_archivo_original)}</td>
+                <td className={styles.accion}>
+                  <button
+                    type="button"
+                    className={`${styles.revisarBtn} ${!puedeRevisar ? styles.bloqueado : ''}`}
+                    onClick={() => revisar(doc)}
+                    title={puedeRevisar ? 'Abrir línea 2: revisión del documento' : 'Acceso no permitido para este perfil'}
+                  >
+                    <Icon nombre={puedeRevisar ? 'find' : 'lock'} size={18} />
+                    <span>Revisar Archivo</span>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       <div className={styles.cards}>
-        {docs.map(d => (
-          <div key={d.id} className={styles.card}>
-            <div>
-              <strong>{d.numero_documento}</strong>
-              <div className={styles.cardMeta}>{d.fecha_documento} · {d.tipo_documento}</div>
+        {docs.map((doc) => (
+          <article key={doc.id} className={styles.card}>
+            <div className={styles.cardInfo}>
+              <strong>{doc.numero_documento}</strong>
+              <span>{formatearFecha(doc.fecha_documento)} · {doc.tipo_documento === 'EXPEDIENTE' ? 'Expediente' : 'Nota'}</span>
             </div>
-            <div className={styles.actions}>
-              <button type="button" className={styles.viewBtn} onClick={() => onConsult(d)}>Ver</button>
-              <button type="button" className={styles.downloadBtn} onClick={() => onDownload(d)}>↓</button>
-              {puedeEditar && (
-                <>
-                  <button type="button" className={styles.editBtn} onClick={() => onEdit(d)}>✎</button>
-                  <button type="button" className={styles.deleteBtn} onClick={() => onDelete(d)}>✕</button>
-                </>
-              )}
-            </div>
-          </div>
+            <button
+              type="button"
+              className={`${styles.revisarBtn} ${!puedeRevisar ? styles.bloqueado : ''}`}
+              onClick={() => revisar(doc)}
+            >
+              <Icon nombre={puedeRevisar ? 'eye' : 'lock'} size={18} />
+              <span>{puedeRevisar ? 'Revisar' : 'Sin acceso'}</span>
+            </button>
+          </article>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

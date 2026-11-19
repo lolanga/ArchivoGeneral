@@ -6,8 +6,19 @@ export type EventoAuditoria =
   | 'CONSULTA_DOCUMENTO'
   | 'DESCARGA_DOCUMENTO'
   | 'CONSULTA_AUDITORIA'
+  | 'CONSULTA_AUDITORIA_DOCUMENTO'
+  | 'IMPRESION_CONSTANCIA'
+  | 'EXPORTACION_AUDITORIA'
+  | 'CAMBIO_PERFIL'
   | 'ACCESO_DENEGADO'
   | (string & {});
+
+/** Eventos que el frontend puede notificar explícitamente a la API. */
+export type EventoCliente =
+  | 'ACCESO_DENEGADO'
+  | 'IMPRESION_CONSTANCIA'
+  | 'EXPORTACION_AUDITORIA'
+  | 'CAMBIO_PERFIL';
 
 export interface RegistroAuditoria {
   id?: string;

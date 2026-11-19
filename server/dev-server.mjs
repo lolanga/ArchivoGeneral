@@ -41,7 +41,19 @@ const EVENTOS = new Set([
   'CONSULTA_DOCUMENTO',
   'DESCARGA_DOCUMENTO',
   'CONSULTA_AUDITORIA',
+  'CONSULTA_AUDITORIA_DOCUMENTO',
+  'IMPRESION_CONSTANCIA',
+  'EXPORTACION_AUDITORIA',
+  'CAMBIO_PERFIL',
   'ACCESO_DENEGADO',
+]);
+
+/** Eventos que el cliente puede comunicar; el resto solo los emite el servidor. */
+const EVENTOS_CLIENTE = new Set([
+  'ACCESO_DENEGADO',
+  'IMPRESION_CONSTANCIA',
+  'EXPORTACION_AUDITORIA',
+  'CAMBIO_PERFIL',
 ]);
 
 const dec = (valor) => {
@@ -100,6 +112,19 @@ function esAdmin(req) {
   return req.headers['x-es-admin'] === 'true';
 }
 
+/** Permisos por línea de trabajo, enviados por el cliente en este servidor de pruebas. */
+function tienePermiso(req, nombre) {
+  if (nombre === 'auditoria' && esAdmin(req)) return true;
+  return req.headers[`x-puede-${nombre}`] === 'true';
+}
+
+function denegar(req, res, accion, permiso) {
+  void auditar(req, 'ACCESO_DENEGADO', {
+    detalles: `Sin permiso ${permiso} para ${accion}`,
+  });
+  return responder(res, 403, { error: `No tiene permiso para ${accion}` });
+}
+
 function firmar(id, exp, descarga) {
   return createHmac('sha256', SECRET)
     .update(`${id}:${exp}:${descarga ? 1 : 0}`)
@@ -143,19 +168,22 @@ async function auditar(req, evento, extra = {}) {
   await appendFile(AUDIT_FILE, `${JSON.stringify(registro)}\n`, 'utf8');
 }
 
-async function leerAuditoria(url) {
+async function leerAuditoria(filtros = {}) {
   let lineas = [];
   try {
     lineas = (await readFile(AUDIT_FILE, 'utf8')).split('\n').filter(Boolean);
   } catch {
     return [];
   }
-  const evento = url.searchParams.get('evento');
-  const usuarioFiltro = url.searchParams.get('usuario');
-  const documento = url.searchParams.get('documento');
-  const desde = url.searchParams.get('desde');
-  const hasta = url.searchParams.get('hasta');
-  const limite = Math.min(Number(url.searchParams.get('limite')) || 200, 1000);
+  const {
+    evento,
+    usuario: usuarioFiltro,
+    documento,
+    desde,
+    hasta,
+    limite: limiteSolicitado = 200,
+  } = filtros;
+  const limite = Math.min(Number(limiteSolicitado) || 200, 1000);
 
   const registros = lineas
     .map((linea) => {
@@ -184,6 +212,7 @@ async function rutaDocumento(id) {
 
 async function subirDocumento(req, res) {
   if (!tokenSesion(req)) return sinToken(req, res, 'subir documento');
+  if (!tienePermiso(req, 'subir')) return denegar(req, res, 'subir documentos (línea 1)', 'subir');
 
   const nombre = dec(req.headers['x-nombre-original']);
   const mime = dec(req.headers['x-mime-type']) || req.headers['content-type'] || 'application/octet-stream';
@@ -226,6 +255,7 @@ async function subirDocumento(req, res) {
     nombre_archivo_original: nombre,
     mime_type: MIME_POR_EXT[ext] ?? mime,
     hash_sha256: hashReal,
+    tamano_bytes: bytes.length,
     usuario_carga_id: usuario(req),
     timestamp_carga: new Date().toISOString(),
   };
@@ -242,6 +272,7 @@ async function subirDocumento(req, res) {
 
 async function actualizarDocumento(req, res, id) {
   if (!tokenSesion(req)) return sinToken(req, res, 'modificar documento');
+  if (!tienePermiso(req, 'subir')) return denegar(req, res, 'modificar metadatos (línea 1)', 'subir');
   const { docs, doc } = await rutaDocumento(id);
   if (!doc) return responder(res, 404, { error: 'Documento no encontrado' });
 
@@ -277,6 +308,7 @@ async function actualizarDocumento(req, res, id) {
 
 async function eliminarDocumento(req, res, id) {
   if (!tokenSesion(req)) return sinToken(req, res, 'eliminar documento');
+  if (!tienePermiso(req, 'subir')) return denegar(req, res, 'eliminar documentos (línea 1)', 'subir');
   const { docs, doc } = await rutaDocumento(id);
   if (!doc) return responder(res, 404, { error: 'Documento no encontrado' });
 
@@ -302,6 +334,16 @@ async function crearUrlFirmada(req, res, id) {
     descarga = Boolean(cuerpo.download);
   } catch {
     return responder(res, 400, { error: 'Cuerpo inválido' });
+  }
+
+  const permisoNecesario = descarga ? 'descargar' : 'revisar';
+  if (!tienePermiso(req, permisoNecesario)) {
+    return denegar(
+      req,
+      res,
+      descarga ? 'descargar el original (línea 2)' : 'revisar documentos (línea 2)',
+      permisoNecesario,
+    );
   }
 
   const exp = Date.now() + TTL_MS;
@@ -371,15 +413,39 @@ const servidor = createServer(async (req, res) => {
         void auditar(req, 'ACCESO_DENEGADO', { detalles: 'Consulta de auditoría sin rol de administrador' });
         return responder(res, 403, { error: 'Acceso restringido a administradores' });
       }
-      const registros = await leerAuditoria(url);
+      const registros = await leerAuditoria({
+        evento: url.searchParams.get('evento'),
+        usuario: url.searchParams.get('usuario'),
+        documento: url.searchParams.get('documento'),
+        desde: url.searchParams.get('desde'),
+        hasta: url.searchParams.get('hasta'),
+        limite: url.searchParams.get('limite'),
+      });
       await auditar(req, 'CONSULTA_AUDITORIA', {
         detalles: `Consulta de auditoría · ${registros.length} registros`,
       });
       return responder(res, 200, registros);
     }
 
+    if (req.method === 'POST' && ruta === '/api/eventos') {
+      if (!tokenSesion(req)) return sinToken(req, res, 'registrar evento');
+      const cuerpo = await cuerpoJson(req);
+      const evento = String(cuerpo.evento ?? '');
+      if (!EVENTOS_CLIENTE.has(evento)) {
+        return responder(res, 400, { error: 'Evento de auditoría no permitido' });
+      }
+      await auditar(req, evento, {
+        documento_id: cuerpo.documento_id || undefined,
+        detalles: String(cuerpo.detalles ?? '').slice(0, 500),
+      });
+      return responder(res, 200, { ok: true });
+    }
+
     if (req.method === 'GET' && ruta === '/api/documentos') {
       if (!tokenSesion(req)) return sinToken(req, res, 'listar documentos');
+      if (!tienePermiso(req, 'revisar') && !tienePermiso(req, 'subir')) {
+        return denegar(req, res, 'consultar el listado', 'revisar o subir');
+      }
       const docs = await leerMetadatos();
       void auditar(req, 'CONSULTA_LISTADO', { detalles: `${docs.length} documentos en el listado` });
       return responder(res, 200, docs.sort((a, b) => b.timestamp_carga.localeCompare(a.timestamp_carga)));
@@ -389,7 +455,25 @@ const servidor = createServer(async (req, res) => {
       return await subirDocumento(req, res);
     }
 
-    let coincidencia = /^\/api\/documentos\/([^/]+)\/acceso$/.exec(ruta);
+    let coincidencia = /^\/api\/documentos\/([^/]+)\/auditoria$/.exec(ruta);
+    if (req.method === 'GET' && coincidencia) {
+      if (!tokenSesion(req)) return sinToken(req, res, 'consultar el historial');
+      if (!tienePermiso(req, 'revisar')) {
+        return denegar(req, res, 'consultar el historial del documento (línea 2)', 'revisar');
+      }
+      const idDocumento = coincidencia[1];
+      const { doc } = await rutaDocumento(idDocumento);
+      if (!doc) return responder(res, 404, { error: 'Documento no encontrado' });
+      const registros = await leerAuditoria({ documento: idDocumento, limite: 200 });
+      void auditar(req, 'CONSULTA_AUDITORIA_DOCUMENTO', {
+        documento_id: idDocumento,
+        numero_documento: doc.numero_documento,
+        detalles: `Historial del documento · ${registros.length} registros`,
+      });
+      return responder(res, 200, registros);
+    }
+
+    coincidencia = /^\/api\/documentos\/([^/]+)\/acceso$/.exec(ruta);
     if (req.method === 'POST' && coincidencia) {
       return await crearUrlFirmada(req, res, coincidencia[1]);
     }

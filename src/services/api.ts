@@ -2,7 +2,11 @@ import type { UsuarioSesion } from '../types/document.types';
 
 export const API = '/api';
 
-/** Todas las peticiones llevan la identidad del usuario para la auditoría. */
+/**
+ * Todas las peticiones llevan la identidad y los permisos del usuario.
+ * La auditoría se genera en el servidor con estos datos; en producción deben
+ * sustituirse por la verificación del JWT institucional.
+ */
 export function cabeceras(sesion: UsuarioSesion, extra: Record<string, string> = {}): HeadersInit {
   return {
     Authorization: `Bearer ${sesion.token}`,
@@ -10,6 +14,10 @@ export function cabeceras(sesion: UsuarioSesion, extra: Record<string, string> =
     'X-Nombre-Completo': encodeURIComponent(sesion.nombre_completo),
     'X-Usuario-Dependencia': encodeURIComponent(sesion.dependencia_id),
     'X-Es-Admin': sesion.permisos.admin ? 'true' : 'false',
+    'X-Puede-Subir': sesion.permisos.subir ? 'true' : 'false',
+    'X-Puede-Revisar': sesion.permisos.revisar ? 'true' : 'false',
+    'X-Puede-Descargar': sesion.permisos.descargar ? 'true' : 'false',
+    'X-Puede-Auditoria': sesion.permisos.auditoria ? 'true' : 'false',
     ...extra,
   };
 }

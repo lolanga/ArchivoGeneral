@@ -1,10 +1,135 @@
-.header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 20px; background: #0F2C59; color: #fff; flex-wrap: wrap; }
-.logo { display: flex; flex-direction: column; }
-.logoTitle { font-weight: 700; font-size: 1.2rem; }
-.logoSub { font-size: 0.8rem; opacity: 0.85; }
-.right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.pill { background: rgba(0,0,0,0.25); padding: 6px 12px; border-radius: 999px; display: flex; flex-direction: column; }
-.agent { font-weight: 600; font-size: 0.9rem; }
-.dep { font-size: 0.75rem; opacity: 0.85; }
-.uploadBtn { background: #fff; color: #0F2C59; font-weight: 600; }
-.auditBtn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.6); color: #fff; }
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.brand { display: flex; align-items: center; gap: var(--space-3); }
+
+.brandIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+  color: var(--color-on-accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brandText { display: flex; flex-direction: column; }
+.brandTitle { font-family: var(--font-headline); font-size: 22px; font-weight: 600; line-height: 1; }
+.brandSub { font-size: 12px; color: rgb(255 255 255 / 80%); margin-top: 4px; }
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-md);
+  background: rgb(0 0 0 / 20%);
+}
+
+.navItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px var(--space-4);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: rgb(255 255 255 / 80%);
+  font-size: 14px;
+  font-weight: 500;
+  min-height: 40px;
+  transition: background var(--transition-state), color var(--transition-state);
+}
+
+.navItem:hover { background: rgb(255 255 255 / 10%); color: #fff; }
+.navActive,
+.navActive:hover { background: var(--color-surface); color: var(--color-primary); font-weight: 700; box-shadow: var(--shadow-sm); }
+.navBlocked { opacity: 0.45; cursor: not-allowed; }
+
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); }
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px var(--space-3);
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 10%);
+}
+
+.pillText { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+.pillLabel { font-size: 11px; color: rgb(255 255 255 / 70%); }
+.pillValue { font-size: 14px; font-weight: 600; }
+.pillDep { font-size: 11px; color: rgb(255 255 255 / 70%); margin-top: 2px; }
+
+.roleSelect {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0 18px 0 0;
+  margin: 0;
+  min-height: 0;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, #fff 50%), linear-gradient(135deg, #fff 50%, transparent 50%);
+  background-position: calc(100% - 10px) 47%, calc(100% - 5px) 47%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.roleSelect option { color: var(--color-on-surface); background: #fff; }
+
+.auditBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 42px;
+  background: rgb(255 255 255 / 15%);
+  border: 1px solid rgb(255 255 255 / 60%);
+  color: #fff;
+  font-weight: 600;
+}
+
+.uploadBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 42px;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.actionBlocked { opacity: 0.45; cursor: not-allowed; }
+
+@media (max-width: 900px) {
+  .inner { padding: var(--space-3) var(--space-4); }
+  .nav { order: 3; width: 100%; justify-content: stretch; }
+  .navItem { flex: 1; justify-content: center; padding: 8px; font-size: 13px; }
+  .brandTitle { font-size: 18px; }
+  .actions { flex: 1; justify-content: flex-end; }
+}

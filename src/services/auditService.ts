@@ -1,3 +1,4 @@
+import type { EventoCliente } from '../types/audit.types';
 import type { UsuarioSesion } from '../types/document.types';
 import type { FiltrosAuditoria, RegistroAuditoria } from '../types/audit.types';
 import { API, cabeceras, verificar } from './api';
@@ -10,6 +11,10 @@ export const ETIQUETAS_EVENTO: Record<string, string> = {
   CONSULTA_DOCUMENTO: 'Vista de documento',
   DESCARGA_DOCUMENTO: 'Descarga de original',
   CONSULTA_AUDITORIA: 'Consulta de auditoría',
+  CONSULTA_AUDITORIA_DOCUMENTO: 'Historial del documento',
+  IMPRESION_CONSTANCIA: 'Impresión de constancia',
+  EXPORTACION_AUDITORIA: 'Exportación de auditoría',
+  CAMBIO_PERFIL: 'Cambio de perfil',
   ACCESO_DENEGADO: 'Acceso denegado',
   lectura: 'Vista de documento (legado)',
   descarga: 'Descarga de original (legado)',
@@ -27,6 +32,33 @@ export async function listarAuditoria(
   const res = await fetch(`${API}/auditoria?${params.toString()}`, { headers: cabeceras(sesion) });
   await verificar(res, 'consultar la auditoría');
   return res.json();
+}
+
+/** Historial acotado a un documento; disponible para quien puede revisarlo. */
+export async function listarAuditoriaDocumento(
+  documentoId: string,
+  sesion: UsuarioSesion,
+): Promise<RegistroAuditoria[]> {
+  const res = await fetch(`${API}/documentos/${encodeURIComponent(documentoId)}/auditoria`, {
+    headers: cabeceras(sesion),
+  });
+  await verificar(res, 'consultar el historial del documento');
+  return res.json();
+}
+
+/** Registra acciones de la UI que no pasan por una llamada de datos (impresión, etc.). */
+export async function registrarEvento(
+  evento: EventoCliente,
+  detalles: string,
+  sesion: UsuarioSesion,
+  documentoId?: string,
+): Promise<void> {
+  const res = await fetch(`${API}/eventos`, {
+    method: 'POST',
+    headers: cabeceras(sesion, { 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ evento, detalles, documento_id: documentoId }),
+  });
+  await verificar(res, 'registrar la acción en la auditoría');
 }
 
 export function detalleComoTexto(detalles: unknown): string {

@@ -11,11 +11,10 @@ interface Props {
 }
 
 const DEPENDENCIAS = [
-  'ARCHIVO GENERAL',
-  'MESA DE ENTRADAS',
-  'DIRECCIÓN DE SEGURIDAD PÚBLICA',
-  'DIRECCIÓN DE PERSONAL',
-  'ASESORÍA LETRADA',
+  'Mesa de Entradas',
+  'Secretaría Académica',
+  'Dirección',
+  'Archivo General',
 ];
 
 export function EditModal({ doc, usuario, onClose, onGuardado }: Props) {
@@ -25,6 +24,7 @@ export function EditModal({ doc, usuario, onClose, onGuardado }: Props) {
   const [dependencia, setDependencia] = useState(doc.dependencia);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
+  const dependencias = DEPENDENCIAS.includes(doc.dependencia) ? DEPENDENCIAS : [doc.dependencia, ...DEPENDENCIAS];
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,7 +62,7 @@ export function EditModal({ doc, usuario, onClose, onGuardado }: Props) {
         <input aria-label="Número Oficial" value={numero} onChange={(e) => setNumero(e.target.value)} />
         <input type="date" aria-label="Fecha del Documento" value={fecha} onChange={(e) => setFecha(e.target.value)} />
         <select aria-label="Dependencia" value={dependencia} onChange={(e) => setDependencia(e.target.value)}>
-          {DEPENDENCIAS.map((d) => <option key={d}>{d}</option>)}
+          {dependencias.map((d) => <option key={d}>{d}</option>)}
         </select>
         {error && <p className={styles.error} role="alert">{error}</p>}
         <button type="submit" className={styles.saveBtn} disabled={guardando}>
