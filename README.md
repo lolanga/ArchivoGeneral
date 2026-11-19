@@ -19,6 +19,7 @@ Toda acción queda registrada en un log append-only consultable solo por perfile
 | [Manual de Usuario](./docs/MANUAL_USUARIO.md) | Guía para operadores, revisores, oficiales y auditores. |
 | [Manual de Instrucciones](./docs/MANUAL_INSTRUCCIONES.md) | Instalación, configuración, API, permisos, auditoría, despliegue y mantenimiento. **Documento vivo: se actualiza en cada entrega.** |
 | [.env.example](./.env.example) | Variables de entorno de ejemplo para desarrollo. No contiene secretos. |
+| [AGENTS.md](./AGENTS.md) | Regla de trabajo: **todo cambio importante requiere la aceptación previa del usuario** y actualización del control de cambios. |
 
 ---
 

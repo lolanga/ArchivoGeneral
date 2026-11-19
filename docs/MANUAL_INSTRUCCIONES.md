@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 | --- | --- |
-| Versión | 1.0 |
+| Versión | 1.1 |
 | Fecha | 2026-11-19 |
 | Destinatarios | Desarrollo, soporte técnico, administradores del sistema y responsables de auditoría |
 | Responsable de actualización | División Archivo General — ISeP / Equipo de desarrollo |
@@ -16,6 +16,7 @@
 | Versión | Fecha | Cambio | Responsable |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-19 | Primera versión. Documenta el flujo en dos líneas, permisos, API de desarrollo, auditoría y capas de modales. | Desarrollo / Archivo General |
+| 1.1 | 2026-11-19 | Se incorpora la aprobación previa del usuario como requisito antes de cambios importantes y se enlaza la regla en `AGENTS.md`. | Desarrollo / Archivo General |
 
 ---
 
@@ -381,7 +382,19 @@ Checklist mínimo:
 
 ## 11. Mantenimiento de este manual
 
-Procedimiento obligatorio en cada cambio relevante:
+### Regla de oro: aprobación previa
+
+**Todo cambio importante debe ser aceptado explícitamente por el usuario antes de ejecutarse.** No se procede por inferencia, por parecer evidente ni por silencio. La regla completa, con la definición de “cambio importante”, está en [`AGENTS.md`](../AGENTS.md) en la raíz del repo; aplica a agentes, desarrolladores y soporte.
+
+Secuencia obligatoria:
+
+1. **Proponer:** explicar alcance, archivos afectados, riesgo y verificación prevista.
+2. **Esperar:** recibir la aceptación explícita del usuario. Sin ella, no se toca código ni documentación.
+3. **Implementar:** ejecutar el cambio aceptado y verificar con `npm run lint` y `npm run build`.
+4. **Documentar en el mismo commit:** versión, fecha, control de cambios y sincronización de documentos.
+5. **Publicar:** revisar `git status`, hacer commit/push y citar la documentación en el mensaje.
+
+Procedimiento de documentación en cada cambio relevante:
 
 1. Incrementar la versión en la tabla de cabecera (`1.0` → `1.1`, etc.).
 2. Actualizar la fecha.
@@ -392,6 +405,8 @@ Procedimiento obligatorio en cada cambio relevante:
    - `MANUAL_USUARIO.md`
 5. Si cambian permisos o rutas, actualizar también los ejemplos de API.
 6. Hacer commit y push con mensaje que mencione la documentación actualizada.
+
+No requieren aprobación previa las correcciones ortográficas o de formato sin efecto funcional, pero se registran en el control de cambios cuando se publican.
 
 Criterio de urgencia:
 
