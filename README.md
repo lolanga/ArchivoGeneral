@@ -1,65 +1,93 @@
-# React + TypeScript + Vite
+# ISeP — Archivo Digital
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplicación web para la **digitalización, archivo, revisión y descarga controlada** de expedientes y notas del Instituto de Seguridad Pública de Santa Fe.
 
-Currently, two official plugins are available:
+El flujo está dividido en dos líneas de trabajo con permisos independientes:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. **Subir o Digitalizar** — alta de documentos y gestión de metadatos.
+2. **Revisar Documento** — consulta controlada, vista previa con URL firmada, descarga condicionada e historial de auditoría.
 
-## React Compiler
+Toda acción queda registrada en un log append-only consultable solo por perfiles de auditoría/administración.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the Oxlint configuration
+## Documentación
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+| Documento | Contenido |
+| --- | --- |
+| [SPEC.md](./SPEC.md) | Especificaciones técnicas, normativa aplicable, modelo de datos y reglas de seguridad. |
+| [Manual de Usuario](./docs/MANUAL_USUARIO.md) | Guía para operadores, revisores, oficiales y auditores. |
+| [Manual de Instrucciones](./docs/MANUAL_INSTRUCCIONES.md) | Instalación, configuración, API, permisos, auditoría, despliegue y mantenimiento. **Documento vivo: se actualiza en cada entrega.** |
+| [.env.example](./.env.example) | Variables de entorno de ejemplo para desarrollo. No contiene secretos. |
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+---
+
+## Inicio rápido (desarrollo local)
+
+Requiere Node.js 20.19+ o 22.12+.
+
+```bash
+npm install
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
-
-## Desarrollo local (subir / listar / modificar / eliminar / previsualizar / descargar / auditar)
-
-La app necesita la API de desarrollo para guardar archivos y metadatos. Se arranca en dos terminales:
+En dos terminales, dentro de la carpeta del repo:
 
 ```bash
 npm run dev:api   # API Node en http://127.0.0.1:3001
 npm run dev       # Vite en http://127.0.0.1:5173 (proxy /api -> :3001)
 ```
 
-El almacenamiento queda en `server/storage/`:
+Abrir <http://127.0.0.1:5173>.
 
-- `files/` — archivos originales, con UUID como nombre.
+La autenticación simulada (`VITE_USE_MOCK_AUTH=true`) permite cambiar de perfil desde el header para probar cada camino de permisos. En producción se usa el token institucional; **no hay pantalla de login**.
+
+Comandos disponibles:
+
+| Comando | Descripción |
+| --- | --- |
+| `npm run dev` | Servidor de desarrollo Vite. |
+| `npm run dev:api` | API de desarrollo sin dependencias externas. |
+| `npm run lint` | Linter Oxlint. |
+| `npm run build` | Compilación TypeScript + Vite (`tsc -b && vite build`). |
+| `npm run preview` | Vista previa del build. |
+
+---
+
+## Permisos principales
+
+| Permiso | Habilita |
+| --- | --- |
+| `subir` | Línea 1: digitalizar/subir, editar metadatos y eliminar documentos. |
+| `revisar` | Línea 2: listar y abrir documentos en el visor. |
+| `descargar` | Obtener el original; puede estar denegado aunque se pueda revisar. |
+| `auditoria` / `admin` | Historial del documento, auditoría global y exportación CSV. |
+
+Los campos ausentes en tokens antiguos se infieren de `read`, `write` y `admin` para mantener compatibilidad. La API de desarrollo recibe estos permisos por cabeceras `X-Puede-*`; en producción deben verificarse desde el JWT en el backend.
+
+Perfiles mock incluidos: **Agente Completo**, **Operador (Solo Subir)**, **Revisor (Solo Consulta)**, **Oficial (Revisar + Descargar)** y **Auditor de Seguridad**.
+
+---
+
+## Almacenamiento y auditoría
+
+La API de desarrollo guarda todo en `server/storage/` (ignorado por Git):
+
+- `files/` — originales con UUID como nombre.
 - `metadata.json` — metadatos de cada documento.
-- `auditoria.jsonl` — registro append-only de **todas** las acciones (alta, modificación, eliminación, consultas, vista, descarga y accesos denegados), con `fecha`, `hora`, `usuario_id`, `nombre_usuario`, `dependencia`, `origen_ip` y detalle. No se puede modificar ni borrar desde la API.
+- `auditoria.jsonl` — registro append-only de altas, modificaciones, bajas, consultas, vistas, descargas, impresión, exportación, cambio de perfil y accesos denegados.
 
-La API valida extensión, tamaño máximo (15 MB) y vuelve a calcular el SHA-256 recibido. La descarga usa URLs firmadas con HMAC y expiración de 15 minutos; no hay acceso público directo. `Cache-Control: no-store` evita caché local sensible.
+Cada registro incluye `fecha`, `hora`, `usuario_id`, `nombre_usuario`, `dependencia`, `origen_ip`, `documento_id` y detalle. No se puede modificar ni borrar desde la API.
 
-Variables de entorno opcionales de la API: `API_PORT` (por defecto 3001) e `ISEP_DEV_SECRET` (secreto de firma; **cambiar fuera de desarrollo**).
+Formatos admitidos: `.pdf`, `.jpg`, `.jpeg`, `.png`, `.webp`, `.tiff`. Tamaño máximo: **15 MB**. El servidor recalcula el SHA-256 y rechaza el archivo si no coincide.
 
-## Auditoría y rol de administrador
+Las URLs firmadas usan HMAC con expiración de 15 minutos y `Cache-Control: no-store`; no existe acceso público directo a los originales.
 
-Toda acción queda registrada en `server/storage/auditoria.jsonl`. La vista **Auditoría** del header solo aparece si el token trae `permisos.admin: true`. Permite filtrar por acción, usuario y rango de fechas, y exportar CSV.
+Variables de la API (configurar en el entorno del proceso, no en `.env` de Vite): `API_PORT` (por defecto `3001`) e `ISEP_DEV_SECRET` (cambiar fuera de desarrollo).
 
-Con el auth mock se puede habilitar el rol para probar:
+---
 
-```bash
-$env:VITE_MOCK_ADMIN='true'; npm run dev
-```
+## Seguridad
 
-En producción el administrador se designa en el token institucional (`permisos.admin`), **no** en el frontend. La API de auditoría exige además la cabecera `X-Es-Admin`; en producción debe sustituirse por verificación JWT real en el backend.
+> La API incluida es **solo para desarrollo/pruebas**. La validación de sesión, los permisos por cabecera y el rol de administrador son stubs. Antes de producción debe sustituirse por el backend institucional con verificación JWT real, almacenamiento seguro en la nube, cifrado en tránsito/reposo y retención formal del log de auditoría.
 
-> Este servidor es solo para pruebas. En producción debe reemplazarse por el backend institucional con autenticación JWT real y almacenamiento en la nube.
+No abrir ni versionar archivos `.env`: pueden contener credenciales. Las credenciales expuestas deben rotarse externamente.
