@@ -87,7 +87,7 @@ export function UploadModal({ onClose, onSubido, usuario }: Props) {
   };
 
   return (
-    <div className={styles.overlay} role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className={`${styles.overlay} modal-overlay`} role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <form className={styles.modal} onSubmit={onSubmit} role="dialog" aria-modal="true" aria-labelledby="titulo-carga">
         <header className={styles.header}>
           <h2 id="titulo-carga">Subir Nuevo Documento Digitalizado</h2>

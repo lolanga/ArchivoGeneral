@@ -47,7 +47,7 @@ export function EditModal({ doc, usuario, onClose, onGuardado }: Props) {
   };
 
   return (
-    <div className={styles.overlay}>
+    <div className={`${styles.overlay} modal-overlay`} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <form className={styles.modal} onSubmit={onSubmit}>
         <h2>Modificar metadatos</h2>
         <p className={styles.doc}>{doc.nombre_archivo_original}</p>

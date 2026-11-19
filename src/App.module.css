@@ -14,7 +14,7 @@
   position: fixed;
   left: var(--space-3);
   bottom: var(--space-3);
-  z-index: 40;
+  z-index: var(--z-mock-mark);
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   background: rgb(15 44 89 / 78%);

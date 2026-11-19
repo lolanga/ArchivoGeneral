@@ -140,6 +140,8 @@
   align-items: flex-start;
   justify-content: center;
   overflow: auto;
+  /* Confina el plugin nativo del PDF dentro del visor. */
+  isolation: isolate;
 }
 
 .marcaAgua {
@@ -163,7 +165,6 @@
 .preview,
 .previewImagen {
   position: relative;
-  z-index: 1;
   display: block;
   max-width: none;
   min-height: 460px;

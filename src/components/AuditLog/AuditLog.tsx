@@ -59,7 +59,7 @@ export function AuditLog({ usuario, onClose }: Props) {
   };
 
   return (
-    <div className={styles.overlay}>
+    <div className={`${styles.overlay} modal-overlay`} role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <section className={styles.panel} aria-label="Registro de auditoría">
         <div className={styles.header}>
           <div>

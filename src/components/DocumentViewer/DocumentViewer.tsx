@@ -28,7 +28,7 @@ export function DocumentViewer({ doc, usuario, onClose, onDownload }: Props) {
   const esPdf = doc.mime_type === 'application/pdf';
 
   return (
-    <div className={styles.overlay}>
+    <div className={`${styles.overlay} modal-overlay`} role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className={styles.panel}>
         <div className={styles.header}>
           <h3>{doc.numero_documento}</h3>

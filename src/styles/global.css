@@ -30,3 +30,15 @@ input, select, textarea {
   border-radius: var(--radius);
   background: var(--color-surface);
 }
+
+/**
+ * Clase compartida por TODOS los modales. Ademas del z-index, fuerza una capa
+ * de composicion propia: el visor de PDF de Chromium es un plugin nativo y
+ * puede dibujarse por encima de overlays que solo usan z-index.
+ */
+.modal-overlay {
+  z-index: var(--z-modal);
+  isolation: isolate;
+  transform: translateZ(0);
+  will-change: transform;
+}
